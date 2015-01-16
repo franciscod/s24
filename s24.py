@@ -1,5 +1,9 @@
 from itertools import permutations
+from functools import reduce
 from operator import add, sub, mul, truediv as div
+
+def prod(factors):
+    return reduce(mul, factors, 1)
 
 class Valor():
     def __lt__(self, other):
@@ -142,6 +146,78 @@ def descompone_suma(op):
 
     return (op,), ()
 
+class Fraccion(Operacion):
+    num = ()
+    den = ()
+
+    def __init__(self, num, den):
+        self.num = tuple(n for n in sorted(num, reverse=True))
+        self.den = tuple(d for d in sorted(den, reverse=True))
+
+    def __repr__(self):
+        return "%s(%s,%s)" % (self.__class__.__name__, repr(self.num), repr(self.den))
+
+    def __str__(self):
+        s = ""
+
+        sign = {False: "*", True: ""}
+        first = True
+        for i in self.num:
+            si = self.paren(i)
+            s += sign[first] + si
+            if first:
+                first = False
+
+
+        if self.den:
+            s += "/"
+
+            sign = {False: "*", True: ""}
+            first = True
+            for i in self.den:
+                si = self.paren(i)
+                s += sign[first] + si
+                if first:
+                    first = False
+
+        return s
+
+    def paren(self, other):
+        p = True
+
+        if isinstance(other, Carta):
+            p = False
+
+        if p:
+            return "(%s)" % other
+        return str(other)
+
+    def __eq__(self, other):
+        return (self.num == other.num) and (self.den == other.den)
+
+    def __hash__(self):
+        return hash((self.num, self.den))
+
+    def v(self):
+        return prod((p.v() for p in self.num)) / prod((n.v() for n in self.den))
+
+def descompone_fraccion(op):
+
+    if isinstance(op, (Producto, Cociente)):
+        ap, an = descompone_fraccion(op.a)
+        bp, bn = descompone_fraccion(op.b)
+
+        if isinstance(op, Producto):
+            return ap+bp, an+bn
+
+        if isinstance(op, Cociente):
+            return ap+bn, an+bp
+
+    if isinstance(op, Fraccion):
+        return op.num, op.den
+
+    return (op,), ()
+
 def precedes(op1, op2):
     order = {
             Suma: 0,
@@ -158,13 +234,19 @@ def cuentas(a, b):
     for op in (Suma(a, b), Resta(a, b), Resta(b, a)):
         yield SumaAlgebraica(*descompone_suma(op))
 
-    yield Producto(a, b)
 
-    if b.v() != 0:
-        yield Cociente(a, b)
+    def fracs():
+        yield Producto(a, b)
 
-    if a.v() != 0:
-        yield Cociente(b, a)
+        if b.v() != 0:
+            yield Cociente(a, b)
+
+        if a.v() != 0:
+            yield Cociente(b, a)
+
+    for op in fracs():
+        yield Fraccion(*descompone_fraccion(op))
+
 
 def o(va, vb):
     for a in va:
