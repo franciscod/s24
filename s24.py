@@ -1,11 +1,6 @@
 from itertools import permutations
 from operator import add, sub, mul, truediv as div
 
-def paren(obj):
-    if isinstance(obj, Carta):
-        return obj
-    return "(%s)" % obj
-
 class Carta():
     def __init__(self, a):
         self.a = a
@@ -37,13 +32,23 @@ class OperacionBin(Operacion):
         return "%s(%s,%s)" % (self.__class__.__name__, repr(self.a), repr(self.b))
 
     def __str__(self):
-        return "%s%s%s" % (paren(self.a), self.sym, paren(self.b))
+        return "%s%s%s" % (self.paren(self.a), self.sym, self.paren(self.b))
 
     def __eq__(self, other):
         return (self.a == other.a) and (self.b == other.b)
 
     def __hash__(self):
         return hash((self.a, self.b))
+
+    def paren(self, other):
+        p = True
+
+        if isinstance(other, Carta):
+            p = False
+
+        if p:
+            return "(%s)" % other
+        return other
 
     def v(self):
         return self.op(self.a.v(), self.b.v())
