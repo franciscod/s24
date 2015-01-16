@@ -1,7 +1,11 @@
 from itertools import permutations
 from operator import add, sub, mul, truediv as div
 
-class Carta():
+class Valor():
+    def __lt__(self, other):
+        return self.v() < other.v()
+
+class Carta(Valor):
     def __init__(self, a):
         self.a = a
 
@@ -20,7 +24,7 @@ class Carta():
     def v(self):
         return self.a
 
-class Operacion():
+class Operacion(Valor):
     pass
 
 class OperacionBin(Operacion):
@@ -119,26 +123,13 @@ class SumaAlgebraica(Operacion):
         return hash((self.pos, self.neg))
 
     def v(self):
-        return sum(self.pos) - sum(self.neg)
+        return sum((p.v() for p in self.pos)) - sum((n.v() for n in self.neg))
 
-def es_pura_suma(op):
-    if not isinstance(op, (Carta, Suma, Resta, SumaAlgebraica)):
-        return False
+def descompone_suma(op):
 
-    if isinstance(op, OperacionBin):
-        return es_pura_suma(op.a) and es_pura_suma(op.b)
-
-    return True
-
-def desarma_suma_posneg(op):
-    # requiere es_pura_suma(op)
-
-    if isinstance(op, Carta):
-        return (op.a,), ()
-
-    if isinstance(op, OperacionBin):
-        ap, an = desarma_suma_posneg(op.a)
-        bp, bn = desarma_suma_posneg(op.b)
+    if isinstance(op, (Suma, Resta)):
+        ap, an = descompone_suma(op.a)
+        bp, bn = descompone_suma(op.b)
 
         if isinstance(op, Suma):
             return ap+bp, an+bn
@@ -148,6 +139,8 @@ def desarma_suma_posneg(op):
 
     if isinstance(op, SumaAlgebraica):
         return op.pos, op.neg
+
+    return (op,), ()
 
 def precedes(op1, op2):
     order = {
@@ -161,13 +154,9 @@ def precedes(op1, op2):
     return order[op1.__class__] > order[op2.__class__]
 
 def cuentas(a, b):
-    sumas = (Suma(a, b), Resta(a, b), Resta(b, a))
 
-    if es_pura_suma(a) and es_pura_suma(b):
-        for su in sumas:
-            yield SumaAlgebraica(*desarma_suma_posneg(su))
-    else:
-        yield from sumas
+    for op in (Suma(a, b), Resta(a, b), Resta(b, a)):
+        yield SumaAlgebraica(*descompone_suma(op))
 
     yield Producto(a, b)
 
