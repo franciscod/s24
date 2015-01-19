@@ -123,6 +123,10 @@ class SumaAlgebraica(Operacion):
         return s
 
     def __eq__(self, other):
+
+        if not isinstance(other, SumaAlgebraica):
+            return False
+
         return (self.pos == other.pos) and (self.neg == other.neg)
 
     def __hash__(self):
@@ -195,6 +199,10 @@ class Fraccion(Operacion):
         return str(other)
 
     def __eq__(self, other):
+
+        if not isinstance(other, Fraccion):
+            return False
+
         return (self.num == other.num) and (self.den == other.den)
 
     def __hash__(self):
