@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 from itertools import permutations
 from functools import reduce
 from operator import add, sub, mul, truediv as div
@@ -261,29 +263,29 @@ formas = (
         lambda a, b, c, d: o(o(a, b), o(c, d)),
 )
 
-def s(a, b, c, d, t=24):
-    ns = a, b, c, d
+def s(ns, target=24):
     cartas = map(tupla_1_carta, ns)
+
     for p in permutations(cartas):
         for f in formas:
             for raiz in f(*p):
-                if raiz.v() == t:
+                if raiz.v() == target:
                     yield raiz
 
 if __name__ == '__main__':
     import sys
 
     if not 5 <= len(sys.argv) <= 6:
-        print ("usage: " + sys.argv[0] + " A B C D [RESULT]")
+        print ("usage: " + sys.argv[0] + " n1 n2 n3 n4 [target]")
         exit()
 
-    args = sys.argv[1:5]
+    ns = sys.argv[1:5]
     kwargs = {}
 
     if len(sys.argv) == 6:
-        kwargs[t] = sys.argv[5]
+        kwargs['target'] = int(sys.argv[5])
 
-    sol = set(s(*args, **kwargs))
+    sol = set(s(ns, **kwargs))
 
     for each in sol:
         print (each)
