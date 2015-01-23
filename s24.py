@@ -16,7 +16,7 @@ class Carta(Valor):
         self.a = a
 
     def __repr__(self):
-        return "Carta(%d)" % self.a
+        return "C(%d)" % self.a
 
     def __str__(self):
         return "%d" % self.a
@@ -228,17 +228,6 @@ def descompone_fraccion(op):
 
     return (op,), ()
 
-def precedes(op1, op2):
-    order = {
-            Suma: 0,
-            Resta: 0,
-            SumaAlgebraica: 0,
-            Producto: 1,
-            Cociente: 1,
-            }
-
-    return order[op1.__class__] > order[op2.__class__]
-
 def cuentas(a, b):
 
     for op in (Suma(a, b), Resta(a, b), Resta(b, a)):
@@ -271,7 +260,7 @@ formas = (
         lambda a, b, c, d: o(o(a, b), o(c, d)),
 )
 
-def s(ns, target=24):
+def solve(ns, target=24):
     cartas = map(tupla_1_carta, ns)
 
     for p in permutations(cartas):
@@ -293,7 +282,7 @@ if __name__ == '__main__':
     if len(sys.argv) == 6:
         kwargs['target'] = int(sys.argv[5])
 
-    sol = set(s(ns, **kwargs))
+    sol = set(solve(ns, **kwargs))
 
     for each in sol:
         print (each)
