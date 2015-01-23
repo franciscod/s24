@@ -100,9 +100,26 @@ class SumaAlgebraica(Operacion):
     pos = ()
     neg = ()
 
-    def __init__(self, pos, neg):
+    def __init__(self, op):
+        pos, neg = self._decompose(op)
         self.pos = tuple(p for p in sorted(pos, reverse=True))
         self.neg = tuple(n for n in sorted(neg, reverse=True))
+
+    def _decompose(self, op):
+        if isinstance(op, (Suma, Resta)):
+            ap, an = self._decompose(op.a)
+            bp, bn = self._decompose(op.b)
+
+            if isinstance(op, Suma):
+                return ap+bp, an+bn
+
+            if isinstance(op, Resta):
+                return ap+bn, an+bp
+
+        if isinstance(op, SumaAlgebraica):
+            return op.pos, op.neg
+
+        return (op,), ()
 
     def __repr__(self):
         return "%s(%s,%s)" % (self.__class__.__name__, repr(self.pos), repr(self.neg))
@@ -135,30 +152,31 @@ class SumaAlgebraica(Operacion):
     def v(self):
         return sum((p.v() for p in self.pos)) - sum((n.v() for n in self.neg))
 
-def descompone_suma(op):
-
-    if isinstance(op, (Suma, Resta)):
-        ap, an = descompone_suma(op.a)
-        bp, bn = descompone_suma(op.b)
-
-        if isinstance(op, Suma):
-            return ap+bp, an+bn
-
-        if isinstance(op, Resta):
-            return ap+bn, an+bp
-
-    if isinstance(op, SumaAlgebraica):
-        return op.pos, op.neg
-
-    return (op,), ()
-
 class Fraccion(Operacion):
     num = ()
     den = ()
 
-    def __init__(self, num, den):
+    def __init__(self, op):
+        num, den = self._decompose(op)
         self.num = tuple(n for n in sorted(num, reverse=True))
         self.den = tuple(d for d in sorted(den, reverse=True))
+
+    def _decompose(self, op):
+        if isinstance(op, (Producto, Cociente)):
+            ap, an = self._decompose(op.a)
+            bp, bn = self._decompose(op.b)
+
+            if isinstance(op, Producto):
+                return ap+bp, an+bn
+
+            if isinstance(op, Cociente):
+                return ap+bn, an+bp
+
+        if isinstance(op, Fraccion):
+            return op.num, op.den
+
+        return (op,), ()
+
 
     def __repr__(self):
         return "%s(%s,%s)" % (self.__class__.__name__, repr(self.num), repr(self.den))
@@ -211,27 +229,10 @@ class Fraccion(Operacion):
     def v(self):
         return prod((p.v() for p in self.num)) / prod((n.v() for n in self.den))
 
-def descompone_fraccion(op):
-
-    if isinstance(op, (Producto, Cociente)):
-        ap, an = descompone_fraccion(op.a)
-        bp, bn = descompone_fraccion(op.b)
-
-        if isinstance(op, Producto):
-            return ap+bp, an+bn
-
-        if isinstance(op, Cociente):
-            return ap+bn, an+bp
-
-    if isinstance(op, Fraccion):
-        return op.num, op.den
-
-    return (op,), ()
-
 def cuentas(a, b):
 
     for op in (Suma(a, b), Resta(a, b), Resta(b, a)):
-        yield SumaAlgebraica(*descompone_suma(op))
+        yield SumaAlgebraica(op)
 
 
     def fracs():
@@ -244,7 +245,7 @@ def cuentas(a, b):
             yield Cociente(b, a)
 
     for op in fracs():
-        yield Fraccion(*descompone_fraccion(op))
+        yield Fraccion(op)
 
 
 def o(va, vb):
