@@ -248,15 +248,13 @@ def cuentas(a, b):
         yield Fraccion(op)
 
 
-def o(va, vb):
-    r = set()
+def o(ga, gb):
+    sa = set(ga)
+    sb = set(gb)
 
-    for a in va:
-        for b in vb:
-            for c in cuentas(a, b):
-                r.add(c)
-
-    return r
+    for a in sa:
+        for b in sb:
+            yield from cuentas(a, b)
 
 def tupla_1_carta(n):
     return (Carta(int(n)), )
