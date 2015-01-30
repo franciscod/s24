@@ -289,6 +289,3 @@ if __name__ == '__main__':
 
     for each in sol:
         print (each)
-
-    for each in sol:
-        print (repr(each))
