@@ -249,9 +249,14 @@ def cuentas(a, b):
 
 
 def o(va, vb):
+    r = set()
+
     for a in va:
         for b in vb:
-            yield from cuentas(a,b)
+            for c in cuentas(a, b):
+                r.add(c)
+
+    return r
 
 def tupla_1_carta(n):
     return (Carta(int(n)), )
