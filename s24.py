@@ -1,11 +1,11 @@
 #!/usr/bin/python
 
-from itertools import permutations
-from functools import reduce
-from operator import add, sub, mul, truediv as div
+import itertools
+import functools
+import operator
 
 def prod(factors):
-    return reduce(mul, factors, 1)
+    return functools.reduce(operator.mul, factors, 1)
 
 class Valor():
     def __lt__(self, other):
@@ -78,22 +78,22 @@ class OperacionBinConmuta(OperacionBin):
 
 
 class Suma(OperacionBinConmuta):
-    op = add
+    op = operator.add
     sym = '+'
 
 
 class Resta(OperacionBin):
-    op = sub
+    op = operator.sub
     sym = '-'
 
 
 class Producto(OperacionBinConmuta):
-    op = mul
+    op = operator.mul
     sym = '*'
 
 
 class Cociente(OperacionBin):
-    op = div
+    op = operator.truediv
     sym = '/'
 
 class SumaAlgebraica(Operacion):
@@ -267,7 +267,7 @@ formas = (
 def solve(ns, target=24):
     cartas = map(tupla_1_carta, ns)
 
-    for p in permutations(cartas):
+    for p in itertools.permutations(cartas):
         for f in formas:
             for raiz in f(*p):
                 if raiz.v() == target:
