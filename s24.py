@@ -252,9 +252,8 @@ def o(ga, gb):
     sa = set(ga)
     sb = set(gb)
 
-    for a in sa:
-        for b in sb:
-            yield from cuentas(a, b)
+    for a, b in itertools.product(sa, sb):
+        yield from cuentas(a, b)
 
 def tupla_1_carta(n):
     return (Carta(int(n)), )
